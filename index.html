@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI AFREED</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6a85b6; /* Soft blue */
+            --secondary-color: #bac8e0; /* Lighter blue */
+            --background-dark: #121212;
+            --surface-dark: #1e1e1e;
+            --text-light: #e0e0e0;
+            --text-dark: #000000;
+            --chat-bg: rgba(30, 30, 30, 0.95);
+            --header-bg: rgba(40, 40, 40, 0.9);
+            --input-bg: #2d2d2d;
+            --input-border: #555;
+            --toolbar-bg: rgba(40, 40, 40, 0.9);
+            --scrollbar-track: #2d2d2d;
+            --scrollbar-thumb: #6a85b6;
+            
+            /* New Colors for Settings & History Menu */
+            --menu-bg: #292d3e;
+            --menu-text: #e0e0e0;
+            --menu-section-bg: #3c4257;
+            --menu-toggle-bg: #6366f1;
+            --menu-toggle-off-bg: #6b7280;
+            --menu-thumb-bg: #ffffff;
+            --menu-slider-track: #4b5563;
+        }
+
+        body.light-theme {
+            --background-dark: #f0f2f5;
+            --surface-dark: #ffffff;
+            --text-light: #333333;
+            --text-dark: #ffffff;
+            --chat-bg: rgba(255, 255, 255, 0.95);
+            --header-bg: rgba(240, 240, 240, 0.9);
+            --input-bg: #e0e0e0;
+            --input-border: #ccc;
+            --toolbar-bg: rgba(240, 240, 240, 0.9);
+            --scrollbar-track: #e0e0e0;
+            --scrollbar-thumb: #999;
+
+            /* Light theme for new menus */
+            --menu-bg: #ffffff;
+            --menu-text: #333333;
+            --menu-section-bg: #f5f5f5;
+            --menu-toggle-bg: #6366f1;
+            --menu-toggle-off-bg: #ccc;
+            --menu-thumb-bg: #ffffff;
+            --menu-slider-track: #d1d5db;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+        }
+
+        .chat-container {
+            background: var(--chat-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            height: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+        
+        body.light-theme .chat-container {
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header {
+            background: var(--header-bg);
+            color: var(--text-light);
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        body.light-theme .chat-header {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .settings-menu, .history-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--menu-bg);
+            color: var(--menu-text);
+            padding: 20px;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+        
+        .settings-menu.visible, .history-menu.visible {
+            display: flex;
+        }
+
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .menu-header .close-btn {
+            background: none;
+            border: none;
+            color: var(--menu-text);
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        
+        .history-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .history-content .message {
+            margin: 0;
+        }
+        
+        .history-actions {
+            display: flex;
+            justify-content: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .history-actions button {
+            background: #d32f2f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .history-actions button:hover {
+            background: #b71c1c;
+        }
+
+        .settings-tabs {
+            display: flex;
+            justify-content: space-around;
+            background: var(--menu-section-bg);
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .settings-tabs button {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: var(--menu-text);
+            font-size: 0.9em;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .settings-tabs button.active {
+            background: var(--primary-color);
+        }
+
+        .settings-section {
+            background: var(--menu-section-bg);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .settings-section h3 {
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: var(--menu-text);
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        body.light-theme .setting-item {
+             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* Custom Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--menu-toggle-off-bg);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--menu-thumb-bg);
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--menu-toggle-bg);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+        
+        /* Custom Slider (AI Response) */
+        .ai-response-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .ai-response-slider {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: var(--menu-slider-track);
+            outline: none;
+            border-radius: 4px;
+            transition: opacity .2s;
+        }
+        
+        .ai-response-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary-color);
+            border: 3px solid var(--menu-thumb-bg);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .ai-response-value {
+            white-space: nowrap;
+        }
+        
+        /* Existing styles */
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--surface-dark);
+            scroll-behavior: smooth;
+            height: calc(100% - 140px);
+            color: var(--text-light);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 18px;
+            border-radius: 18px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease-in-out;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .user-message {
+            background: linear-gradient(45deg, #1d2b64, #f8cdda);
+            color: var(--text-dark);
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .ai-message {
+            background: rgba(60, 60, 60, 0.9);
+            color: var(--text-light);
+            border-bottom-left-radius: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .ai-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .ai-actions button, .code-block .copy-button {
+            background: #555;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .ai-actions button:hover, .code-block .copy-button:hover {
+            background: #777;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: var(--toolbar-bg);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+        }
+        
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            font-size: 16px;
+            outline: none;
+            background: transparent;
+            color: var(--text-light);
+        }
+
+        .mic-button {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.5em;
+            padding: 0 10px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .mic-button.recording {
+            color: red;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .send-button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #1d2b64, #f8cdda);
+            color: var(--text-dark);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            background: var(--toolbar-bg);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            justify-content: center;
+        }
+
+        .toolbar button {
+            flex: 1;
+            margin: 4px;
+            padding: 8px;
+            font-size: 12px;
+            background: linear-gradient(135deg, #4b6cb7, #182848);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            font-size: 2.5em;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+
+        .splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-screen h1 {
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .splash-screen h1.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .splash-screen .typing-indicator {
+            display: flex;
+            background: none;
+            box-shadow: none;
+            margin-bottom: 0;
+        }
+
+        .splash-screen .typing-indicator span {
+            background: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                padding: 10px;
+                height: 100vh;
+            }
+            .chat-container {
+                border-radius: 0;
+                height: 100%;
+            }
+            .chat-header {
+                font-size: 1.2em;
+            }
+            .chat-header .menu-button, .developer-button {
+                font-size: 0.7em; /* Buttons are smaller */
+                padding: 5px 8px;
+            }
+            .input-container {
+                padding: 10px;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .input-wrapper {
+                flex: 1;
+            }
+            .send-button {
+                width: 100%;
+                padding: 12px 20px;
+            }
+            .toolbar {
+                justify-content: space-around;
+            }
+            .toolbar button {
+                flex-basis: 45%;
+                margin: 5px 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-screen" id="splash-screen">
+        <h1 id="splash-text">🚀 Welcome to AI AFREED</h1>
+        <div class="typing-indicator" id="splash-typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+    <div class="container">
+        <div class="chat-container">
+            <div class="settings-menu" id="settings-menu">
+                <div class="menu-header">
+                    <span>Test Settings</span>
+                    <button class="close-btn" onclick="closeSettingsMenu()">×</button>
+                </div>
+                <div class="settings-tabs">
+                    <button class="active">Default AI</button>
+                    <button>AI Mentions (Coming Soon)</button>
+                    <button>Channels (Coming Soon)</button>
+                </div>
+
+                <div class="settings-section">
+                    <h3>AI Reply Setting</h3>
+                    <div class="setting-item">
+                        <span>Reply on Mention Only</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span>Default Message</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span>Fallback Suggestion</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span>Voice Responses</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Voice & Theme</h3>
+                    <div class="setting-item">
+                        <label for="language-select">Language:</label>
+                        <select id="language-select">
+                            <option value="hi-IN">Hindi</option>
+                            <option value="en-US">English (US)</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="as-IN">Assamese</option>
+                            <option value="bn-IN">Bengali</option>
+                            <option value="gu-IN">Gujarati</option>
+                            <option value="kn-IN">Kannada</option>
+                            <option value="ml-IN">Malayalam</option>
+                            <option value="mr-IN">Marathi</option>
+                            <option value="pa-IN">Punjabi</option>
+                            <option value="ta-IN">Tamil</option>
+                            <option value="te-IN">Telugu</option>
+                            <option value="ur-IN">Urdu</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="voice-select">AI Voice:</label>
+                        <select id="voice-select"></select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="gender-select">Voice Gender:</label>
+                        <select id="gender-select">
+                            <option value="any">Any</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="rate-range">Voice Speed:</label>
+                        <input type="range" id="rate-range" min="0.5" max="2" value="1" step="0.1">
+                    </div>
+                    <div class="setting-item">
+                        <span>Theme</span>
+                        <button class="theme-button" onclick="toggleTheme()">☀️/🌙</button>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>AI Response</h3>
+                    <p>Change your AI response score</p>
+                    <div class="ai-response-slider-container">
+                        <input type="range" class="ai-response-slider" id="ai-response-slider" min="0" max="100" value="60">
+                        <span id="ai-response-value" class="ai-response-value">60%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-menu" id="history-menu">
+                <div class="menu-header">
+                    <span>Chat History</span>
+                    <button class="close-btn" onclick="closeHistoryMenu()">×</button>
+                </div>
+                <div class="history-content" id="history-content">
+                    </div>
+                <div class="history-actions">
+                    <button onclick="clearHistory()">Clear History</button>
+                </div>
+            </div>
+
+            <div class="chat-header">
+                <span>🤖 AI AFREED</span>
+                <div style="display: flex; gap: 10px;">
+                    <button class="menu-button" onclick="openHistoryMenu()">History</button>
+                    <button class="menu-button" onclick="openSettingsMenu()">Settings</button>
+                    <button class="developer-button" onclick="openDeveloperInfo()">Developer</button>
+                </div>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                </div>
+            <div class="typing-indicator" id="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="input-container">
+                <input type="file" id="file-input" accept="image/*" style="display:none;">
+                <div class="input-wrapper">
+                    <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
+                    <button id="mic-button" class="mic-button"><i class="fas fa-microphone"></i></button>
+                </div>
+                <button class="send-button" onclick="sendMessage()">Send</button>
+            </div>
+            <div class="toolbar">
+                <button onclick="document.getElementById('file-input').click()">📷 Camera/Files</button>
+                <button onclick="specialAction('Think longer: ')">💡 Think Longer</button>
+                <button onclick="specialAction('Do deep research: ')">🔍 Deep Research</button>
+                <button onclick="specialAction('Explain simply: ')">📖 Study</button>
+                <button onclick="generateImage()">🎨 Create Image</button>
+                <button onclick="webSearchAction()">🌍 Web Search</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyBWqtm5iUOqP4Sky40MhaVS9egF9OS1LNo';
+        const CHAT_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+        const IMAGE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent';
+        
+        const voiceSelect = document.getElementById('voice-select');
+        const rateRange = document.getElementById('rate-range');
+        const languageSelect = document.getElementById('language-select');
+        const genderSelect = document.getElementById('gender-select');
+        const aiResponseSlider = document.getElementById('ai-response-slider');
+        const aiResponseValue = document.getElementById('ai-response-value');
+        const chatMessagesContainer = document.getElementById('chat-messages');
+
+        const micButton = document.getElementById('mic-button');
+        const userInput = document.getElementById('user-input');
+
+        let allVoices = [];
+        let recognition;
+        let isListening = false;
+        let finalTranscript = '';
+
+        function saveSettings() {
+            localStorage.setItem('selectedLanguage', languageSelect.value);
+            localStorage.setItem('selectedGender', genderSelect.value);
+        }
+
+        function loadSettings() {
+            const savedLanguage = localStorage.getItem('selectedLanguage');
+            const savedGender = localStorage.getItem('selectedGender');
+            if (savedLanguage) {
+                languageSelect.value = savedLanguage;
+            }
+            if (savedGender) {
+                genderSelect.value = savedGender;
+            }
+        }
+
+        function setupSpeechRecognition() {
+            if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = languageSelect.value;
+
+                recognition.onstart = () => {
+                    isListening = true;
+                    micButton.classList.add('recording');
+                    console.log('Voice recognition started');
+                };
+
+                recognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    finalTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript;
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+                    userInput.value = finalTranscript + interimTranscript;
+                };
+
+                recognition.onend = () => {
+                    isListening = false;
+                    micButton.classList.remove('recording');
+                    console.log('Voice recognition ended');
+                    if (finalTranscript.trim().length > 0) {
+                        setTimeout(() => {
+                            sendMessage(finalTranscript);
+                            finalTranscript = ''; // Reset for next use
+                        }, 500); // 500ms delay to ensure a clean send
+                    }
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    isListening = false;
+                    micButton.classList.remove('recording');
+                };
+
+                micButton.addEventListener('click', () => {
+                    if (isListening) {
+                        recognition.stop();
+                    } else {
+                        recognition.start();
+                    }
+                });
+
+                languageSelect.addEventListener('change', () => {
+                    recognition.lang = languageSelect.value;
+                });
+                
+            } else {
+                micButton.style.display = 'none';
+                console.warn('Speech Recognition not supported in this browser.');
+            }
+        }
+        
+        function populateVoices() {
+            allVoices = speechSynthesis.getVoices();
+            filterVoices();
+        }
+
+        function filterVoices() {
+            const selectedLang = languageSelect.value;
+            const selectedGender = genderSelect.value;
+            
+            voiceSelect.innerHTML = '';
+
+            const filteredVoices = allVoices.filter(voice => {
+                const langMatch = voice.lang.startsWith(selectedLang);
+                if (selectedGender === 'any') {
+                    return langMatch;
+                }
+                const name = voice.name.toLowerCase();
+                const genderMatch = (selectedGender === 'male' && (name.includes('male') || name.includes('man'))) ||
+                                    (selectedGender === 'female' && (name.includes('female') || name.includes('woman')));
+                return langMatch && genderMatch;
+            });
+            
+            if (filteredVoices.length === 0) {
+                const option = document.createElement('option');
+                option.textContent = 'No voices available';
+                voiceSelect.appendChild(option);
+            } else {
+                filteredVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    let genderLabel = '';
+                    const name = voice.name.toLowerCase();
+                    if (name.includes('male') || name.includes('man')) {
+                        genderLabel = ' (Male)';
+                    } else if (name.includes('female') || name.includes('woman')) {
+                        genderLabel = ' (Female)';
+                    }
+                    option.textContent = `${voice.name}${genderLabel}`;
+                    option.setAttribute('data-lang', voice.lang);
+                    option.setAttribute('data-name', voice.name);
+                    voiceSelect.appendChild(option);
+                });
+            }
+        }
+        
+        speechSynthesis.onvoiceschanged = populateVoices;
+        populateVoices();
+
+        languageSelect.addEventListener('change', () => {
+            filterVoices();
+            saveSettings();
+        });
+        genderSelect.addEventListener('change', saveSettings);
+
+        function speakMessage(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                const selectedVoiceName = voiceSelect.options[voiceSelect.selectedIndex].getAttribute('data-name');
+                const selectedVoice = allVoices.find(voice => voice.name === selectedVoiceName);
+
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+                
+                utterance.rate = rateRange.value;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Your browser does not support text-to-speech.');
+            }
+        }
+        
+        async function copyMessage(button) {
+            const messageDiv = button.closest('.message');
+            const messageContent = messageDiv.dataset.rawText;
+            if (!messageContent) {
+                // Fallback for older messages or edge cases
+                alert("Could not copy message. Please try again or clear history.");
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(messageContent);
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                button.textContent = 'Error!';
+            }
+        }
+        
+        function shareMessage(button) {
+            const messageDiv = button.closest('.message');
+            const messageContent = messageDiv.dataset.rawText;
+            if (!messageContent) {
+                alert("Could not share message.");
+                return;
+            }
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'AI AFREED Chat',
+                    text: messageContent,
+                }).then(() => {
+                    console.log('Successfully shared!');
+                }).catch((error) => {
+                    console.error('Error sharing:', error);
+                });
+            } else {
+                alert('Share feature is not supported in this browser.');
+            }
+        }
+        
+        function openSettingsMenu() {
+            document.getElementById('settings-menu').classList.add('visible');
+        }
+
+        function closeSettingsMenu() {
+            document.getElementById('settings-menu').classList.remove('visible');
+        }
+        
+        function openHistoryMenu() {
+            const historyMenu = document.getElementById('history-menu');
+            historyMenu.classList.add('visible');
+            loadHistory();
+        }
+        
+        function closeHistoryMenu() {
+            document.getElementById('history-menu').classList.remove('visible');
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+        }
+
+        aiResponseSlider.oninput = function() {
+            aiResponseValue.textContent = this.value + '%';
+        }
+        
+        function saveMessageToHistory(sender, text) {
+            let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+            history.push({ sender, text });
+            localStorage.setItem('chatHistory', JSON.stringify(history));
+        }
+        
+        function loadHistory() {
+            const historyContent = document.getElementById('history-content');
+            historyContent.innerHTML = '';
+            const history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+            
+            if (history.length === 0) {
+                historyContent.innerHTML = '<p style="text-align: center; color: #aaa;">No history found. Start a new chat!</p>';
+            } else {
+                history.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${message.sender}-message`;
+                    
+                    const messageContentDiv = document.createElement('div');
+                    messageContentDiv.className = 'message-content';
+                    // We load innerHTML here to render correctly
+                    messageContentDiv.innerHTML = formatMessageToHtml(message.text);
+                    
+                    messageDiv.dataset.rawText = message.text;
+                    
+                    messageDiv.appendChild(messageContentDiv);
+                    historyContent.appendChild(messageDiv);
+                });
+            }
+        }
+        
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all chat history?')) {
+                localStorage.removeItem('chatHistory');
+                loadHistory(); // Refresh the display
+                chatMessagesContainer.innerHTML = ''; // Clear main chat as well
+                addMessage("Hello! I'm your AI assistant. How can I help you today?", 'ai', "Hello! I'm your AI assistant. How can I help you today?");
+            }
+        }
+        
+        async function sendMessage(prompt = null, fileData = null) {
+            const userInput = document.getElementById('user-input');
+            const userMessage = prompt || userInput.value.trim();
+            const selectedLanguage = languageSelect.value;
+            
+            if (!userMessage && !fileData) return;
+
+            // New logic to handle developer information request
+            const developerKeywords = ["developer", "creator", "name", "age", "banaya", "kon ho"];
+            const lowerCaseMessage = userMessage.toLowerCase();
+            const containsDeveloperKeyword = developerKeywords.some(keyword => lowerCaseMessage.includes(keyword));
+
+            if (containsDeveloperKeyword) {
+                const responseText = "My creator's name is AFREED and he is 15 years old.";
+                addMessage(userMessage, 'user', userMessage);
+                addMessage(responseText, 'ai', responseText);
+                userInput.value = '';
+                return;
+            }
+
+            if (userMessage) {
+                addMessage(userMessage, 'user', userMessage);
+            }
+            userInput.value = '';
+
+            document.getElementById('typing-indicator').style.display = 'block';
+            
+            let messageForAPI = userMessage;
+            if (selectedLanguage !== 'en-US' && selectedLanguage !== 'en-GB') {
+                messageForAPI = `Please respond in ${languageSelect.options[languageSelect.selectedIndex].text} and in a very polite way. Here is my request: ${userMessage}`;
+            }
+
+            let parts = [{ text: messageForAPI }];
+            if (fileData) {
+                parts.push({
+                    inline_data: {
+                        mime_type: fileData.type,
+                        data: fileData.base64
+                    }
+                });
+                const imgHtml = `<img src="${fileData.preview}" style="max-width:200px;border-radius:8px;">`;
+                addMessage(imgHtml, 'user', imgHtml, true);
+            }
+
+            try {
+                const response = await fetch(`${CHAT_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{ parts: parts }]
+                    })
+                });
+
+                const data = await response.json();
+
+                document.getElementById('typing-indicator').style.display = 'none';
+
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    const aiResponse = data.candidates[0].content.parts[0].text;
+                    addMessage(aiResponse, 'ai', aiResponse);
+                } else {
+                    addMessage('Sorry, I encountered an error. Please try again.', 'ai', 'Sorry, I encountered an error. Please try again.');
+                }
+            } catch (error) {
+                document.getElementById('typing-indicator').style.display = 'none';
+                addMessage('Sorry, there was an error connecting to the AI service.', 'ai', 'Sorry, there was an error connecting to the AI service.');
+            }
+        }
+
+        async function generateImage() {
+            const userInput = document.getElementById('user-input');
+            const description = userInput.value.trim();
+
+            if (!description) {
+                addMessage('Please enter a description for the image.', 'ai', 'Please enter a description for the image.');
+                return;
+            }
+
+            addMessage('Generate image: ' + description, 'user', 'Generate image: ' + description);
+            userInput.value = '';
+            document.getElementById('typing-indicator').style.display = 'block';
+
+            try {
+                const response = await fetch(`${IMAGE_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: `Generate an image of: ${description}` }]
+                        }]
+                    })
+                });
+                const data = await response.json();
+                document.getElementById('typing-indicator').style.display = 'none';
+
+                if (data.candidates && data.candidates[0].content.parts[0].inline_data) {
+                    const imgBase64 = data.candidates[0].content.parts[0].inline_data.data;
+                    const imgHtml = `<img src="data:image/png;base64,${imgBase64}" style="max-width:100%;border-radius:10px;">`;
+                    addMessage(imgHtml, 'ai', imgHtml, true);
+                } else {
+                    const errorMessage = '⚠ Could not generate image. Please try a different description.';
+                    addMessage(errorMessage, 'ai', errorMessage);
+                }
+            } catch (error) {
+                const errorMessage = '❌ Image generation failed. Make sure your API key and model are correct.';
+                document.getElementById('typing-indicator').style.display = 'none';
+                addMessage(errorMessage, 'ai', errorMessage);
+            }
+        }
+
+        function specialAction(prefix) {
+            const userInput = document.getElementById('user-input');
+            userInput.value = prefix + userInput.value;
+            userInput.focus();
+        }
+
+        function webSearchAction() {
+            const userInput = document.getElementById('user-input');
+            const originalQuery = userInput.value.trim();
+            if (originalQuery) {
+                sendMessage(`Do a web search for: ${originalQuery}`);
+            }
+        }
+
+        function formatMessageToHtml(text) {
+            const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+            let formattedText = '';
+            let lastIndex = 0;
+            let match;
+
+            while ((match = codeBlockRegex.exec(text)) !== null) {
+                const beforeCode = text.slice(lastIndex, match.index);
+                if (beforeCode.trim()) {
+                    formattedText += `<div>${beforeCode.replace(/\n/g, '<br>')}</div>`;
+                }
+                const language = match[1] || 'plaintext';
+                const code = match[2];
+                formattedText += `
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>${language}</span>
+                        </div>
+                        <pre><code class="code-content">${escapeHtml(code)}</code></pre>
+                    </div>
+                `;
+                lastIndex = match.index + match[0].length;
+            }
+            const remainingText = text.slice(lastIndex);
+            if (remainingText.trim()) {
+                formattedText += `<div>${remainingText.replace(/\n/g, '<br>')}</div>`;
+            }
+            return formattedText;
+        }
+
+        function addMessage(rawText, sender, textToDisplay, isHtml = false) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.dataset.rawText = rawText;
+            
+            // Save the raw text to history
+            saveMessageToHistory(sender, rawText);
+
+            const messageContentDiv = document.createElement('div');
+            messageContentDiv.className = 'message-content';
+            
+            if (isHtml) {
+                messageContentDiv.innerHTML = textToDisplay;
+            } else {
+                messageContentDiv.innerHTML = formatMessageToHtml(textToDisplay);
+            }
+            
+            messageDiv.appendChild(messageContentDiv);
+
+            if (sender === 'ai') {
+                const actionContainer = document.createElement('div');
+                actionContainer.className = 'ai-actions';
+                
+                const speakButton = document.createElement('button');
+                speakButton.textContent = 'Speak';
+                speakButton.onclick = () => speakMessage(messageDiv.dataset.rawText);
+                actionContainer.appendChild(speakButton);
+                
+                const copyButton = document.createElement('button');
+                copyButton.textContent = 'Copy';
+                copyButton.onclick = () => copyMessage(copyButton);
+                actionContainer.appendChild(copyButton);
+
+                const shareButton = document.createElement('button');
+                shareButton.textContent = 'Share';
+                shareButton.onclick = () => shareMessage(shareButton);
+                actionContainer.appendChild(shareButton);
+
+                messageDiv.appendChild(actionContainer);
+            }
+
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.getElementById('file-input').addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function() {
+                const base64 = reader.result.split(',')[1];
+                sendMessage(null, {
+                    type: file.type,
+                    base64: base64,
+                    preview: reader.result
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        document.getElementById('user-input').focus();
+        
+        function loadChatFromHistory() {
+            const history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+            if (history.length > 0) {
+                history.forEach(message => {
+                    const messagesDiv = document.getElementById('chat-messages');
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${message.sender}-message`;
+                    messageDiv.dataset.rawText = message.text;
+                    
+                    const messageContentDiv = document.createElement('div');
+                    messageContentDiv.className = 'message-content';
+                    messageContentDiv.innerHTML = formatMessageToHtml(message.text);
+                    
+                    messageDiv.appendChild(messageContentDiv);
+                    
+                    if (message.sender === 'ai') {
+                        const actionContainer = document.createElement('div');
+                        actionContainer.className = 'ai-actions';
+                        
+                        const speakButton = document.createElement('button');
+                        speakButton.textContent = 'Speak';
+                        speakButton.onclick = () => speakMessage(messageDiv.dataset.rawText);
+                        actionContainer.appendChild(speakButton);
+                        
+                        const copyButton = document.createElement('button');
+                        copyButton.textContent = 'Copy';
+                        copyButton.onclick = () => copyMessage(copyButton);
+                        actionContainer.appendChild(copyButton);
+
+                        const shareButton = document.createElement('button');
+                        shareButton.textContent = 'Share';
+                        shareButton.onclick = () => shareMessage(shareButton);
+                        actionContainer.appendChild(shareButton);
+
+                        messageDiv.appendChild(actionContainer);
+                    }
+                    
+                    messagesDiv.appendChild(messageDiv);
+                });
+            } else {
+                addMessage("Hello! I'm your AI assistant. How can I help you today?", 'ai', "Hello! I'm your AI assistant. How can I help you today?");
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            const splashScreen = document.getElementById('splash-screen');
+            const splashText = document.getElementById('splash-text');
+            const splashTypingIndicator = document.getElementById('splash-typing-indicator');
+            setTimeout(() => {
+                splashText.classList.add('show');
+                splashTypingIndicator.style.display = 'flex';
+            }, 500);
+            setTimeout(() => {
+                splashScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    loadSettings();
+                    loadChatFromHistory();
+                }, 1000);
+            }, 3000);
+            setupSpeechRecognition();
+        });
+
+        function openDeveloperInfo() {
+            window.open('https://www.instagram.com/god_afreed?igsh=eGUyY3IybHF4Z3Uw', '_blank');
+        }
+    </script>
+</body>
+</html>
